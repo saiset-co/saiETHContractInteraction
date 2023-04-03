@@ -9,9 +9,7 @@ common:
     enabled: true
     port: 8819
   log_mode: "debug"
-  token: ""
   enable_profiling: true
   profiling_port: 8874
 specific:
   eth_server: "https://rpc.ankr.com/polygon_mumbai"
-  log_mode: "debug"
