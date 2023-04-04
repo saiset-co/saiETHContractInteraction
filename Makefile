@@ -9,7 +9,7 @@ build:
 	make docker
 
 service:
-		cd ./src/saiETHContractInteraction && go mod tidy && go build -o ./microservices/saiETHContractInteraction/build/sai-eth-interaction
+		cd ./src/saiETHContractInteraction && go mod tidy && go build -o ./../../microservices/saiETHContractInteraction/build/sai-eth-interaction
 
 docker:
 	docker-compose -f ./microservices/docker-compose.yml up -d --build
