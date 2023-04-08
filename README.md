@@ -53,3 +53,6 @@ curl --location --request GET 'http://localhost:8804' \
 
 ### Run as standalone application
 `microservices/saiETHContractInteraction/build/sai-eth-interaction
+
+## Profiling
+ `host:port/debug/pprof`
