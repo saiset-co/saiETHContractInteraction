@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
@@ -27,30 +28,38 @@ func (is *InternalService) NewHandler() saiService.Handler {
 		"api": saiService.HandlerElement{
 			Name:        "api",
 			Description: "transact encoded transaction to contract by ABI",
-			Function: func(data interface{}) (interface{}, error) {
+			Function: func(data interface{}) (*saiService.Response, error) {
 				contractData, ok := data.(map[string]interface{})
 				if !ok {
 					Service.Logger.Sugar().Debugf("handling connect method, wrong type, current type : %+v", reflect.TypeOf(data))
-					return nil, errors.New("wrong type of incoming data")
+					return &saiService.Response{
+						StatusCode: http.StatusBadRequest,
+					}, errors.New("wrong type of incoming data")
 				}
 
 				b, err := json.Marshal(contractData)
 				if err != nil {
 					Service.Logger.Error("handlers - api - marshal incoming data", zap.Error(err))
-					return nil, err
+					return &saiService.Response{
+						StatusCode: http.StatusBadRequest,
+					}, err
 				}
 
 				req := models.EthRequest{}
 				err = json.Unmarshal(b, &req)
 				if err != nil {
 					Service.Logger.Error("handlers - api - unmarshal data to struct", zap.Error(err))
-					return nil, err
+					return &saiService.Response{
+						StatusCode: http.StatusBadRequest,
+					}, err
 				}
 
 				contract, err := Service.GetContractByName(req.Contract)
 				if err != nil {
 					Service.Logger.Error("handlers - api - GetContractByName", zap.Error(err))
-					return nil, err
+					return &saiService.Response{
+						StatusCode: http.StatusBadRequest,
+					}, err
 				}
 
 				abiEl, err := abi.JSON(strings.NewReader(contract.ABI))
@@ -66,7 +75,9 @@ func (is *InternalService) NewHandler() saiService.Handler {
 				ethClient, err := ethclient.Dial(ethURL)
 				if err != nil {
 					Service.Logger.Error("handlers - api - dial eth server", zap.Error(err))
-					return nil, err
+					return &saiService.Response{
+						StatusCode: http.StatusBadRequest,
+					}, err
 				}
 
 				var args []interface{}
@@ -76,10 +87,14 @@ func (is *InternalService) NewHandler() saiService.Handler {
 					switch arg.(type) {
 					case float64:
 						Service.Logger.Error("handlers - api - wrong value format, please use strings always: 'value': '1'")
-						return nil, errors.New("handlers - api - wrong value format, please use strings always: 'value': '1'")
+						return &saiService.Response{
+							StatusCode: http.StatusBadRequest,
+						}, errors.New("handlers - api - wrong value format, please use strings always: 'value': '1'")
 					case []float64:
 						Service.Logger.Error("handlers - api - wrong value format, please use strings always: 'value': ['1']")
-						return nil, errors.New("handlers - api - wrong value format, please use strings always: 'value': ['1']")
+						return &saiService.Response{
+							StatusCode: http.StatusBadRequest,
+						}, errors.New("handlers - api - wrong value format, please use strings always: 'value': ['1']")
 					}
 
 					if v.Type == "address" {
@@ -90,7 +105,9 @@ func (is *InternalService) NewHandler() saiService.Handler {
 						num, err := strconv.ParseUint(v.Value.(string), 10, 16)
 						if err != nil {
 							Service.Logger.Error("handlers - api - can't convert to uint16")
-							return nil, errors.New("handlers - api - can't convert to uint16")
+							return &saiService.Response{
+								StatusCode: http.StatusBadRequest,
+							}, errors.New("handlers - api - can't convert to uint16")
 						}
 						arg = uint16(num)
 					}
@@ -99,7 +116,9 @@ func (is *InternalService) NewHandler() saiService.Handler {
 						num, err := strconv.ParseUint(v.Value.(string), 10, 8)
 						if err != nil {
 							Service.Logger.Error("handlers - api - can't convert to uint8")
-							return nil, errors.New("handlers - api - can't convert to uint8")
+							return &saiService.Response{
+								StatusCode: http.StatusBadRequest,
+							}, errors.New("handlers - api - can't convert to uint8")
 						}
 						arg = uint8(num)
 					}
@@ -108,7 +127,9 @@ func (is *InternalService) NewHandler() saiService.Handler {
 						arg, ok = new(big.Int).SetString(v.Value.(string), 10)
 						if !ok {
 							Service.Logger.Error("handlers - api - can't convert to bigInt")
-							return nil, errors.New("handlers - api - can't convert to bigInt")
+							return &saiService.Response{
+								StatusCode: http.StatusBadRequest,
+							}, errors.New("handlers - api - can't convert to bigInt")
 						}
 					}
 
@@ -137,7 +158,9 @@ func (is *InternalService) NewHandler() saiService.Handler {
 							s[i], ok = new(big.Int).SetString(a.(string), 10)
 							if !ok {
 								Service.Logger.Error("handlers - api - can't convert to bigInt uint256[]")
-								return nil, errors.New("handlers - api - can't convert to bigInt uint256[]")
+								return &saiService.Response{
+									StatusCode: http.StatusBadRequest,
+								}, errors.New("handlers - api - can't convert to bigInt uint256[]")
 							}
 						}
 						arg = s
@@ -150,7 +173,9 @@ func (is *InternalService) NewHandler() saiService.Handler {
 							num, err := strconv.ParseUint(a.(string), 10, 16)
 							if err != nil {
 								Service.Logger.Error("handlers - api - can't convert to uint16 uint16[]")
-								return nil, errors.New("handlers - api - can't convert to uint16 uint16[]")
+								return &saiService.Response{
+									StatusCode: http.StatusBadRequest,
+								}, errors.New("handlers - api - can't convert to uint16 uint16[]")
 							}
 							s[i] = uint16(num)
 						}
@@ -164,7 +189,9 @@ func (is *InternalService) NewHandler() saiService.Handler {
 							num, err := strconv.ParseUint(a.(string), 10, 8)
 							if err != nil {
 								Service.Logger.Error("handlers - api - can't convert to uint8 uint8[]")
-								return nil, errors.New("handlers - api - can't convert to uint8 uint8[]")
+								return &saiService.Response{
+									StatusCode: http.StatusBadRequest,
+								}, errors.New("handlers - api - can't convert to uint8 uint8[]")
 							}
 							s[i] = uint8(num)
 						}
@@ -180,7 +207,9 @@ func (is *InternalService) NewHandler() saiService.Handler {
 
 				if err != nil {
 					Service.Logger.Error("handlers - api - pack eth server", zap.Error(err))
-					return nil, err
+					return &saiService.Response{
+						StatusCode: http.StatusBadRequest,
+					}, err
 				}
 
 				value := big.NewInt(0)
@@ -188,33 +217,44 @@ func (is *InternalService) NewHandler() saiService.Handler {
 					value, ok = new(big.Int).SetString(req.Value, 10)
 					if !ok {
 						Service.Logger.Error("handlers - api - can't convert value to bigInt")
-						return nil, errors.New("handlers - api - can't convert value `to bigInt")
+						return &saiService.Response{
+							StatusCode: http.StatusBadRequest,
+						}, errors.New("handlers - api - can't convert value `to bigInt")
 					}
 				}
 
 				response, err := Service.RawTransaction(ethClient, value, input, contract)
 				if err != nil {
-					return nil, err
+					return &saiService.Response{
+						StatusCode: http.StatusBadRequest,
+					}, err
 				}
 
-				return response, nil
+				return &saiService.Response{
+					StatusCode: http.StatusOK,
+					Data:       response,
+				}, nil
 			},
 		},
 
 		"add": saiService.HandlerElement{
 			Name:        "add",
 			Description: "add contract to contracts",
-			Function: func(data interface{}) (interface{}, error) {
+			Function: func(data interface{}) (*saiService.Response, error) {
 				contractData, ok := data.(map[string]interface{})
 				if !ok {
 					Service.Logger.Sugar().Debugf("handlers - add - wrong data type, current type : %+v", data)
-					return nil, errors.New("wrong type of incoming data")
+					return &saiService.Response{
+						StatusCode: http.StatusBadRequest,
+					}, errors.New("wrong type of incoming data")
 				}
 
 				b, err := json.Marshal(contractData)
 				if err != nil {
 					Service.Logger.Error("api - add - marshal incoming data", zap.Error(err))
-					return nil, err
+					return &saiService.Response{
+						StatusCode: http.StatusBadRequest,
+					}, err
 				}
 
 				contracts := models.Contracts{}
@@ -251,7 +291,10 @@ func (is *InternalService) NewHandler() saiService.Handler {
 					Service.Logger.Error("handlers - add - rewrite contracts file", zap.Error(err))
 					return nil, err
 				}
-				return "ok", nil
+				return &saiService.Response{
+					StatusCode: http.StatusOK,
+					Data:       "OK",
+				}, nil
 
 			},
 		},
@@ -259,24 +302,30 @@ func (is *InternalService) NewHandler() saiService.Handler {
 		"delete": saiService.HandlerElement{
 			Name:        "delete",
 			Description: "delete contract by name",
-			Function: func(data interface{}) (interface{}, error) {
+			Function: func(data interface{}) (*saiService.Response, error) {
 				deleteData, ok := data.(map[string]interface{})
 				if !ok {
 					Service.Logger.Sugar().Debugf("handlers - delete - wrong data type, current type : %+v", data)
-					return nil, errors.New("wrong type of incoming data")
+					return &saiService.Response{
+						StatusCode: http.StatusBadRequest,
+					}, errors.New("wrong type of incoming data")
 				}
 
 				b, err := json.Marshal(deleteData)
 				if err != nil {
 					Service.Logger.Error("api - delete - marshal incoming data", zap.Error(err))
-					return nil, err
+					return &saiService.Response{
+						StatusCode: http.StatusBadRequest,
+					}, err
 				}
 
 				deleteContractName := models.DeleteData{}
 				err = json.Unmarshal(b, &deleteContractName)
 				if err != nil {
 					Service.Logger.Error("handlers - add - unmarshal data to struct", zap.Error(err))
-					return nil, err
+					return &saiService.Response{
+						StatusCode: http.StatusBadRequest,
+					}, err
 				}
 
 				Service.Mutex.Lock()
@@ -288,9 +337,14 @@ func (is *InternalService) NewHandler() saiService.Handler {
 				err = Service.RewriteContractsConfig(contractsPath)
 				if err != nil {
 					Service.Logger.Error("handlers - delete - rewrite contracts file", zap.Error(err))
-					return nil, err
+					return &saiService.Response{
+						StatusCode: http.StatusInternalServerError,
+					}, err
 				}
-				return "ok", nil
+				return &saiService.Response{
+					StatusCode: http.StatusOK,
+					Data:       "OK",
+				}, nil
 
 			},
 		},
