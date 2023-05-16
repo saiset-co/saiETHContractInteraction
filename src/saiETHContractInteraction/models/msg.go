@@ -10,10 +10,12 @@ type Parameter struct {
 }
 
 type EthRequest struct {
-	Contract string       `json:"contract"`
-	Method   string       `json:"method"`
-	Value    string       `json:"value"`
-	Params   []*Parameter `json:"params"`
+	Contract    string       `json:"contract"`
+	Method      string       `json:"method"`
+	Value       string       `json:"value"`
+	Params      []*Parameter `json:"params"`
+	IsProcessed bool         `json:"is_processed"`
+	DbKey       string       `json:"db_key,omitempty"`
 }
 
 type Contract struct {
@@ -36,4 +38,14 @@ type Contracts struct {
 }
 type DeleteData struct {
 	Names []string `json:"names"`
+}
+
+type CheckStatusRequest struct {
+	ID string `json:"id" valid:",required"`
+}
+
+// Validate contract
+func (m *CheckStatusRequest) Validate() error {
+	_, err := valid.ValidateStruct(m)
+	return err
 }

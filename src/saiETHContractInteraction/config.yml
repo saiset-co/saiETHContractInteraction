@@ -11,3 +11,5 @@ common:
   log_mode: "debug"
 specific:
   eth_server: "https://rpc.ankr.com/polygon_mumbai"
+  sleep: 10
+  

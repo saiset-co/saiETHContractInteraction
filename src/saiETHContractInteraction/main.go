@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/iamthe1whoknocks/saiEthInteraction/internal"
+	"github.com/saiset-co/saiETHContractInteraction/internal"
 	"github.com/saiset-co/saiService"
 )
 
@@ -13,6 +13,8 @@ func main() {
 	is := internal.InternalService{Context: svc.Context}
 
 	svc.RegisterInitTask(is.Init)
+
+	//defer is.Db.Close()
 
 	svc.RegisterHandlers(
 		is.NewHandler())

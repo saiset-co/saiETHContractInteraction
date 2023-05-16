@@ -1,6 +1,6 @@
 package utils
 
-import "github.com/iamthe1whoknocks/saiEthInteraction/models"
+import "github.com/saiset-co/saiETHContractInteraction/models"
 
 func RemoveContract(slice []models.Contract, s int) []models.Contract {
 	return append(slice[:s], slice[s+1:]...)

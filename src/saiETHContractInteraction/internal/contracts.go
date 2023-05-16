@@ -8,8 +8,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/iamthe1whoknocks/saiEthInteraction/models"
-	"github.com/iamthe1whoknocks/saiEthInteraction/utils"
+	"github.com/saiset-co/saiETHContractInteraction/models"
+	"github.com/saiset-co/saiETHContractInteraction/utils"
 	"go.uber.org/zap"
 )
 
@@ -47,7 +47,7 @@ func (s *InternalService) getInitialContracts(path string) error {
 	}
 
 	s.Contracts = contracts.Contracts
-	s.Logger.Sugar().Debugf("FOUND CONTRACTS :%+v\n", s.Contracts) // DEBUG
+	//s.Logger.Sugar().Debugf("FOUND CONTRACTS :%+v\n", s.Contracts) // DEBUG
 	return nil
 }
 
@@ -70,7 +70,7 @@ LOOP:
 			}
 			contractHash := sha256.Sum256(b1)
 			if incomingHash == contractHash {
-				Service.Logger.Debug("handlers - add - contract already exists", zap.Any("contract", contract))
+				Service.Logger.Debug("handlers - add - contract already exists", zap.String("contract", contract.Name))
 				continue LOOP
 			}
 		}
