@@ -75,14 +75,14 @@ func (is *InternalService) handlePendingRequests(ctx context.Context) {
 			continue
 		}
 
-		for i := range requests {
-			contract, err := Service.GetContractByName(requests[i].Contract)
+		for _, req := range requests {
+			contract, err := Service.GetContractByName(req.Contract)
 			if err != nil {
 				Service.Logger.Error("main - handle pending requests - GetContractByName", zap.Error(err))
 				continue
 			}
 
-			Service.Logger.Debug("main - handle pending requests - handling", zap.String("request", requests[i].Contract), zap.String("server", contract.Server))
+			Service.Logger.Debug("main - handle pending requests - handling", zap.String("request", req.Contract), zap.String("server", contract.Server))
 
 			ethClient, err := ethclient.Dial(contract.Server)
 			if err != nil {
@@ -98,7 +98,7 @@ func (is *InternalService) handlePendingRequests(ctx context.Context) {
 
 			Service.Logger.Debug("main - handle pending requests - connection established", zap.String("network id", id.String()))
 
-			value, input, err := Service.HandleRequest(contract, requests[i])
+			value, input, err := Service.HandleRequest(contract, req)
 			if err != nil {
 				Service.Logger.Error("main - handle pending requests - HandleRequest", zap.Error(err))
 				continue
@@ -112,9 +112,15 @@ func (is *InternalService) handlePendingRequests(ctx context.Context) {
 
 			Service.Logger.Debug("main - handle pending requests - response", zap.String("server name", contract.Server), zap.String("response", response))
 
-			err = is.Delete(requests[i].DbKey)
+			err = is.Delete(req.DbKey)
 			if err != nil {
-				Service.Logger.Error("main - handle pending requests - RawTransaction", zap.Error(err))
+				Service.Logger.Error("main - handle pending requests - delete", zap.Error(err))
+				continue
+			}
+
+			err = is.UpdateStatus(req)
+			if err != nil {
+				Service.Logger.Error("main - handle pending requests - saveUpdatedRequest", zap.Error(err))
 				continue
 			}
 		}

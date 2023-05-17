@@ -74,7 +74,7 @@ func (is *InternalService) NewHandler() saiService.Handler {
 					Service.Logger.Error("handlers - api - check eth server", zap.Error(err))
 					Service.Logger.Debug("handlers - api - check connection - error - saving request to db")
 
-					uid, err := is.Save(&req, b)
+					uid, err := is.Save(b)
 					if err != nil {
 						Service.Logger.Error("handlers - api - save request", zap.Error(err))
 						return &saiService.SaiResponse{

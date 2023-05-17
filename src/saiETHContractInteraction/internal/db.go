@@ -16,7 +16,7 @@ var (
 )
 
 // save requests in boltdb
-func (is *InternalService) Save(req *models.EthRequest, data []byte) (string, error) {
+func (is *InternalService) Save(data []byte) (string, error) {
 	uid := uuid.New()
 	err := is.Db.Update(func(tx *bbolt.Tx) error {
 		b := tx.Bucket(requestBucket)
@@ -82,6 +82,27 @@ func (is *InternalService) Delete(id string) error {
 		b := tx.Bucket(requestBucket)
 		err := b.Delete([]byte(id))
 		return err
+	})
+	return err
+}
+
+// save requests in boltdb
+func (is *InternalService) UpdateStatus(req *models.EthRequest) error {
+	err := is.Db.Update(func(tx *bbolt.Tx) error {
+		b := tx.Bucket(requestBucket)
+		err := b.Delete([]byte(req.DbKey))
+		if err != nil {
+			return fmt.Errorf("db - updateStatus - delete : %w", err)
+		}
+
+		req.IsProcessed = true
+
+		data, err := json.Marshal(req)
+		if err != nil {
+			return fmt.Errorf("db - updateStatus - marshal : %w", err)
+		}
+		b.Put([]byte(req.DbKey), data)
+		return nil
 	})
 	return err
 }
