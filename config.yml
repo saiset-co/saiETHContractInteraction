@@ -1,0 +1,13 @@
+common:
+  http:
+    enabled: true
+    port: 8881
+  socket:
+    enabled: false
+    port: 9000
+  ws:
+    enabled: false
+    port: 9001
+  log_mode: "debug"
+specific:
+  eth_server: ""
