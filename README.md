@@ -14,7 +14,7 @@ Http proxy to create transaction to the ETH contracts.
 - `eth_server` - ETH server url
 
 ## How to run
-`make build`: rebuild and start service  
+`make build`: rebuild and start service   
 `make up`: start service  
 `make down`: stop service  
 `make logs`: display service logs
@@ -38,10 +38,10 @@ Http proxy to create transaction to the ETH contracts.
 }
 ```
 #### Params
-`$name` <- contract name
-`$contract_method_name` <- contract method name
-`$value` <- string, value
-`$some_value` <- string, value
+`$name` <- contract name  
+`$contract_method_name` <- contract method name  
+`$value` <- string, value  
+`$some_value` <- string, value  
 
 ### Add contracts
 ```json lines
@@ -60,12 +60,12 @@ Http proxy to create transaction to the ETH contracts.
 ```
 
 #### Params
-`$name` <- contract name
-`$server` <- ETH server url
-`$address` <- contract address
-`$abi` <- abi encoded
-`$private` <- private key to sign transactions
-`$gas_limit` <- gas limit value
+`$name` <- contract name  
+`$server` <- ETH server url  
+`$address` <- contract address  
+`$abi` <- abi encoded  
+`$private` <- private key to sign transactions  
+`$gas_limit` <- gas limit value  
 
 ### Delete contracts
 ```json lines
