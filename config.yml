@@ -9,5 +9,6 @@ common:
     enabled: false
     port: 9001
   log_mode: "debug"
+
 specific:
   eth_server: ""

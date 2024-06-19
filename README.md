@@ -1,58 +1,80 @@
-## saiETHContractInteraction
+## saiETHInteraction
 
-### Config
-#### config.yml
+Http proxy to create transaction to the ETH contracts.
 
-eth_server: "" //For all contracts for now  
-log_mode: "debug" //Debug mode
+## Configurations
+**config.yml** - common saiService config file.
 
-#### contracts.json
+### Common block
+- `http_server` - http server section
+    - `enabled` - enable or disable http handlers
+    - `port`    - http server port
 
-{  
-&emsp;    "name": "", //Contract name, uses in api commands  
-&emsp;    "server": "", //Feature update, geth server per contract  
-&emsp;    "abi": "", //Contract ABI, escaped json string  
-&emsp;    "address": "", //Contract address  
-&emsp;    "private": "", //Private key to sign commands  
-&emsp;    "gas_limit": 0 //Gas limit for the command transaction  
+### Specific block
+- `eth_server` - ETH server url
+
+## How to run
+`make build`: rebuild and start service  
+`make up`: start service  
+`make down`: stop service  
+`make logs`: display service logs
+
+## API
+### Contract interaction
+```json lines
+{
+  "method": "api",
+  "data": {
+    "contract":"$name",
+    "method":"$contract_method_name", 
+    "value": "$value", 
+    "params":[
+      {
+        "type":"$(int|string|float...)",
+        "value":"$some_value"
+      }
+    ]
+  }
 }
+```
+#### Params
+`$name` <- contract name
+`$contract_method_name` <- contract method name
+`$value` <- string, value
+`$some_value` <- string, value
 
-### API
-#### Contract command
-- request:
+### Add contracts
+```json lines
+{
+  "contracts": [
+    {
+      "name":"$name", 
+      "server": "$server",
+      "address":"$address",
+      "abi":"$abi", 
+      "private": "$private", 
+      "gas_limit":$gas_limit
+    }
+  ]
+}
+```
 
-curl --location --request GET 'http://localhost:8804' \
-&emsp;    --header 'Token: SomeToken' \
-&emsp;    --header 'Content-Type: application/json' \
-&emsp;    --data-raw '{"method": "api", "data": {"contract":"$name","method":"$contract_method_name", "value": "$value", "params":[{"type":"$(int|string|float...)","value":"$some_value"}]}}'
+#### Params
+`$name` <- contract name
+`$server` <- ETH server url
+`$address` <- contract address
+`$abi` <- abi encoded
+`$private` <- private key to sign transactions
+`$gas_limit` <- gas limit value
 
-- response: {"tx_0123"} //transaction hash
+### Delete contracts
+```json lines
+{
+  "names": [
+    "$name"
+  ]
+}
+```
 
-#### Add contracts
-- request:
-
-curl --location --request GET 'http://localhost:8804' \
-&emsp;    --header 'Token: SomeToken' \
-&emsp;    --header 'Content-Type: application/json' \
-&emsp;    --data-raw '{"method": "add", "data": {"contracts": [{"name":"$name", "server": "$server", "address":"$address","abi":"$abi", "private": "$private", "gas_limit":100}]}}'
-
-- response: {"ok"}
-
-#### Delete contracts
-- request:
-
-curl --location --request GET 'http://localhost:8804' \
-&emsp;    --header 'Token: SomeToken' \
-&emsp;    --header 'Content-Type: application/json' \
-&emsp;    --data-raw '{"method": "delete", "data": {"names": ["$name"]}}'
-
-- response: {"ok"}
-
-### Run in Docker
-`make up`
-
-### Run as standalone application
-`microservices/saiETHContractInteraction/build/sai-eth-interaction
-
-## Profiling
- `host:port/debug/pprof`
+#### Params
+`$name` <- contract name
