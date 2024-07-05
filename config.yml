@@ -1,7 +1,7 @@
 common:
   http:
     enabled: true
-    port: 8881
+    port: 8883
   socket:
     enabled: false
     port: 9000
@@ -11,4 +11,4 @@ common:
   log_mode: "debug"
 
 specific:
-  eth_server: ""
+  eth_server: "https://data-seed-prebsc-1-s1.bnbchain.org:8545"

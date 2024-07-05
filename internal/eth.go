@@ -39,7 +39,7 @@ func response(tx *types.Transaction, res string) (resTX, error) {
 }
 
 func (is *InternalService) RawTransaction(client *ethclient.Client, value *big.Int, data []byte, contract *models.Contract) (string, error) {
-	d := time.Now().Add(5000 * time.Millisecond)
+	d := time.Now().Add(500 * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), d)
 	defer cancel()
 
@@ -64,7 +64,7 @@ func (is *InternalService) RawTransaction(client *ethclient.Client, value *big.I
 
 	toAddress := common.HexToAddress(contract.Address)
 
-	gasPrice, err := client.SuggestGasPrice(context.Background())
+	gasPrice, err := client.SuggestGasPrice(ctx)
 	if err != nil {
 		is.Logger.Error("handlers - api - RawTransaction - get suggested gas price", zap.Error(err))
 		return "", err
@@ -81,7 +81,7 @@ func (is *InternalService) RawTransaction(client *ethclient.Client, value *big.I
 		Data:     data,
 	})
 
-	chainID, err := client.NetworkID(context.Background())
+	chainID, err := client.NetworkID(ctx)
 	if err != nil {
 		res, err := response(tx, err.Error())
 		is.Logger.Error("handlers - api - RawTransaction - get networkID", zap.Any("TX", res))
@@ -95,22 +95,26 @@ func (is *InternalService) RawTransaction(client *ethclient.Client, value *big.I
 		return "", err
 	}
 
+	hash := signedTx.Hash().String()
+
 	mux.Lock()
 	err = client.SendTransaction(ctx, signedTx)
 	if err != nil {
 		res, err := response(tx, err.Error())
+		mux.Unlock()
 		is.Logger.Error("handlers - api - RawTransaction - sendTx", zap.Any("TX", res))
 		return "", err
 	}
 
-	res, _ := response(tx, signedTx.Hash().String())
-	resS, _ := json.Marshal(res)
+	res, _ := response(tx, hash)
+	//resS, _ := json.Marshal(res)
 
 	for {
-		resTx, isPending, err := client.TransactionByHash(ctx, signedTx.Hash())
+		resTx, _, err := client.TransactionByHash(ctx, signedTx.Hash())
 		if err != nil {
 			res, err := response(tx, err.Error())
 			is.Logger.Error("handlers - api - RawTransaction - sendTx", zap.Any("TX", res))
+			mux.Unlock()
 			return "", err
 		}
 
@@ -118,7 +122,7 @@ func (is *InternalService) RawTransaction(client *ethclient.Client, value *big.I
 			is.Logger.Debug("handlers - api - RawTransaction - sendTx - tx was not created", zap.Any("TX", res))
 			mux.Unlock()
 			goto done
-		} else if resTx != nil && !isPending {
+		} else if resTx != nil {
 			is.Logger.Debug("handlers - api - RawTransaction - sendTx - tx done", zap.Any("TX", res))
 			mux.Unlock()
 			goto done
@@ -129,5 +133,5 @@ func (is *InternalService) RawTransaction(client *ethclient.Client, value *big.I
 	}
 
 done:
-	return string(resS), nil
+	return hash, nil
 }

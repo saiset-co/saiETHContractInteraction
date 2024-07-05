@@ -193,12 +193,15 @@ func (is *InternalService) NewHandler() saiService.Handler {
 					}
 				}
 
-				response, err := Service.RawTransaction(ethClient, value, input, contract)
+				res, err := Service.RawTransaction(ethClient, value, input, contract)
 				if err != nil {
 					return nil, 500, err
 				}
 
-				return response, 200, nil
+				return map[string]interface{}{
+					"Status": "OK",
+					"Result": res,
+				}, 200, nil
 			},
 		},
 
